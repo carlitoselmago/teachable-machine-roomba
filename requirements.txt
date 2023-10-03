@@ -1,0 +1,2 @@
+opencv-python
+irobot_edu_sdk
