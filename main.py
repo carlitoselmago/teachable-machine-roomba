@@ -17,15 +17,19 @@ class teachablemachine():
 	class_name=""
 	confidence_score=0
 
-	def __init__(self):
-
+	def __init__(self,robot):
+		self.robot=robot
 		cam_loop_thread = threading.Thread(target=self.cam_loop)
 		cam_loop_thread.start()
 
-		sleep(2)
+		sleep(1)
 		self.initAI()
 		AI_loop_thread=threading.Thread(target=self.AI_loop)
 		AI_loop_thread.start()
+
+		sleep(2)
+
+		self.start_roomba()
 
 
 	def initAI(self):
@@ -82,7 +86,7 @@ class teachablemachine():
 				image = (image / 127.5) - 1
 
 				# Predicts the model
-				prediction = self.model.predict(image)
+				prediction = self.model.predict(image,verbose = 0)
 				index = np.argmax(prediction)
 				self.class_name = self.class_names[index]
 				self.confidence_score = prediction[0][index]
@@ -91,63 +95,67 @@ class teachablemachine():
 				#print("Class:", self.class_name,self.confidence_score)
 				#print("Confidence Score:", str(np.round(confidence_score * 100))[:-2], "%")
 
+	def start_roomba(self):
+		robot=self.robot
 
-MACHINE=teachablemachine()
+		@event(robot.when_play)
+		async def play(robot):
+			# Trigger an undock and then dock. Try putting this in an infinite loop!
+			print('Undock')
+			print(await robot.undock())
+			
 
+		@event(robot.when_play)
+		async def play(robot):
+			# Dock sensor visualizer; could be improved with events
+			
+			action="iddle"
 
-####################################################################
+			while True:
+				left=0
+				right=0
+				speed=2
+			
+				#sensor = (await robot.get_docking_values())['IR sensor 0']
+				#r = 255 * ((MACHINE.confidence_score & 8)/8)
+				#g = 255 * ((MACHINE.confidence_score & 4)/4)
+				#b = 255 * (MACHINE.confidence_score & 1)
+				#await robot.set_lights_rgb(r, g, b)
+				
+				#choose action
+				if self.confidence_score>0.8:
+					action=self.class_name
+
+				print(action)
+
+				#apply action
+				if action=="left":
+					right=speed
+					left=-speed
+
+				if action=="right":
+					right=-speed
+					left=speed
+
+				if action=="forward":
+					right=speed
+					left=speed
+
+				if action=="backward":
+					right=-speed
+					left=-speed
+
+				
+				#do move the wheels
+				await robot.set_wheel_speeds(left,right)
+
+		robot.play()
 
 robot = Create3(Bluetooth('MonicaRoomba'))
+sleep(2)
+MACHINE=teachablemachine(robot)
 
-@event(robot.when_play)
-async def play(robot):
-	# Trigger an undock and then dock. Try putting this in an infinite loop!
-	print('Undock')
-	print(await robot.undock())
-	
 
-@event(robot.when_play)
-async def play(robot):
-	# Dock sensor visualizer; could be improved with events
-	
-	action="iddle"
 
-	while True:
-		left=0
-		right=0
-		speed=2
-	   
-		#sensor = (await robot.get_docking_values())['IR sensor 0']
-		r = 255 * ((MACHINE.confidence_score & 8)/8)
-		g = 255 * ((MACHINE.confidence_score & 4)/4)
-		b = 255 * (MACHINE.confidence_score & 1)
-		await robot.set_lights_rgb(r, g, b)
-		
-		#choose action
-		if MACHINE.confidence_score>0.8:
-			action=MACHINE.class_name
 
-		print(action)
 
-		#apply action
-		if action=="left":
-			right=speed
-			left=-speed
-
-		if action=="right":
-			right=-speed
-			left=speed
-
-		if action=="forward":
-			right=speed
-			left=speed
-
-		if action=="backward":
-			right=-speed
-			left=-speed
-
-		
-		#do move the wheels
-		await robot.set_wheel_speeds(left,right)
-
-robot.play()
