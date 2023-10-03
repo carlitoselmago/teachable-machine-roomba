@@ -116,7 +116,7 @@ class teachablemachine():
 				right=0
 				speed=2
 			
-				#sensor = (await robot.get_docking_values())['IR sensor 0']
+				sensor = (await robot.get_docking_values())['IR sensor 0']
 				#r = 255 * ((MACHINE.confidence_score & 8)/8)
 				#g = 255 * ((MACHINE.confidence_score & 4)/4)
 				#b = 255 * (MACHINE.confidence_score & 1)
@@ -147,6 +147,7 @@ class teachablemachine():
 
 				
 				#do move the wheels
+				sleep(0.01)
 				await robot.set_wheel_speeds(left,right)
 
 		robot.play()

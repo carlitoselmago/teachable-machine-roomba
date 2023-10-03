@@ -1,2 +1,3 @@
 opencv-python
 irobot_edu_sdk
+#numpy==1.23.5

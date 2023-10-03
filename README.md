@@ -2,7 +2,7 @@
 move a roomba using teachable machine
 
 ## install
-conda create -n teachablemachine tensorflow-gpu keras-gpu -y
+conda create -n teachablemachine tensorflow-gpu keras -y
 pip install -r requirements.txt
 
 ## run
